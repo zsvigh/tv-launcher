@@ -13,7 +13,7 @@
 
   /* háttér: kép + olvashatósági árnyék + app-színű fény (csak opacity animál) */
   #amb { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#08080c; }
-  #bg { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#08080c url(bg.jpg) center/cover no-repeat; }
+  #bg { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#08080c center/cover no-repeat; }
   #scrim { position:absolute; left:0; top:0; width:1920px; height:1080px;
     background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,0) 55%), linear-gradient(0deg,rgba(0,0,0,.55),rgba(0,0,0,0) 45%); }
   #glows .g { position:absolute; left:0; top:0; width:1920px; height:1080px; opacity:0; transition:opacity 600ms ease; }
@@ -54,11 +54,13 @@
   #mini { position:absolute; right:120px; top:104px; text-align:right; font-size:40px; font-weight:500; }
 
   /* BEÁLLÍTÁSOK */
-  #panel { position:absolute; left:0; top:0; width:1920px; height:1080px; background:rgba(0,0,0,.6); }
+  #panel { position:absolute; left:0; top:0; width:1920px; height:1080px; background:rgba(0,0,0,.4); }
   #box { position:absolute; left:50%; top:50%; width:1040px; margin-left:-520px; margin-top:-360px; padding:44px 48px; border-radius:44px;
     background:rgba(34,34,42,.96); box-shadow:0 40px 90px rgba(0,0,0,.7); }
   #box h2 { font-size:44px; font-weight:600; margin-bottom:28px; }
   .row { display:flex; align-items:center; justify-content:space-between; height:88px; padding:0 32px; margin-bottom:8px; border-radius:22px; font-size:34px; }
+  .row.sm { height:60px; font-size:28px; margin-bottom:4px; }
+  .row.sm span:first-child { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:620px; }
   .row.focus { background:rgba(255,255,255,.16); }
   .row .val { color:rgba(255,255,255,.7); }
   .row.focus .val { color:#fff; }
@@ -88,7 +90,7 @@
   <div id="view"><div id="row"></div></div>
 </div>
 
-<div id="panel" class="hide"><div id="box"><h2>Beállítások</h2><div id="rows"></div><div id="phint" class="sec">Fel/le: kijelölés · Balra/jobbra: érték · OK: választás · Vissza: bezár</div></div></div>
+<div id="panel" class="hide"><div id="box"><h2 id="ptitle">Beállítások</h2><div id="rows"></div><div id="phint" class="sec">Fel/le: kijelölés · Balra/jobbra: érték · OK: választás · Vissza: bezár</div></div></div>
 
 <div id="toast"></div>
 <div id="hint">1 Home · 2 Polc</div>
@@ -115,12 +117,13 @@ var CITIES = [
 // ponytail: a Samsung beállítások app azonosítója nem ellenőrzött; 2017-es modelleken lehet, hogy nem indítható.
 var TV_SETTINGS_ID = "org.tizen.menu-setting";
 
-var S = { mode:"home", city:0, bg:"on", glow:"on" };
-var idx = 0, panel = false, prow = 0;
+var S = { mode:"home", city:0, bg:"1", glow:"on" };
+var idx = 0, panel = false, prow = 0, pview = "main", aoff = 0, arow = 0;
+var INSTALLED = [], TV_ID = TV_SETTINGS_ID;
 
 function $(id) { return document.getElementById(id); }
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} }
-function load() { try { var j = JSON.parse(store("s") || "{}"); for (var k in j) if (k in S) S[k] = j[k]; } catch (e) {} if (!CITIES[S.city]) S.city = 0; }
+function load() { try { var j = JSON.parse(store("s") || "{}"); for (var k in j) if (k in S) S[k] = j[k]; } catch (e) {} if (!CITIES[S.city]) S.city = 0; if (S.bg === "on") S.bg = "1"; }
 function save() { store("s", JSON.stringify(S)); }
 function paint(el, c) { el.style.background = "linear-gradient(180deg," + c + ",rgba(0,0,0,.5)), " + c; }
 function content(el, a) {
@@ -157,7 +160,8 @@ function render() {
 function apply() {
   $("home").classList.toggle("hide", S.mode !== "home");
   $("shelf").classList.toggle("hide", S.mode !== "shelf");
-  $("bg").classList.toggle("hide", S.bg !== "on");
+  $("bg").classList.toggle("hide", S.bg === "off");
+  if (S.bg !== "off") $("bg").style.backgroundImage = "url(bg" + S.bg + ".jpg)";
   $("glows").classList.toggle("hide", S.glow !== "on");
   render();
 }
@@ -174,13 +178,39 @@ function launchId(id, name, fail) {
 var ROWS = [
   { label:"Nézet",       key:"mode", opts:[["home","Home"],["shelf","Polc"]] },
   { label:"Város",       key:"city", opts:CITIES.map(function (c, n) { return [n, c.name]; }) },
-  { label:"Háttérkép",   key:"bg",   opts:[["on","Be"],["off","Ki"]] },
+  { label:"Háttérkép",   key:"bg",   opts:[["1","Éjszaka"],["2","Alkonyat"],["3","Aurora"],["4","Köd"],["5","Grafit"],["off","Egyszínű"]] },
   { label:"Színes fény", key:"glow", opts:[["on","Be"],["off","Ki"]] },
   { label:"TV beállítások", act:"tv" },
+  { label:"Összes alkalmazás", act:"apps" },
   { label:"Bezárás",        act:"close" }
 ];
+
+/* telepített appok: a valódi azonosítók a TV-ről jönnek (ha a Tizen API elérhető) */
+var MATCH = [/netflix/i, /^youtube$|^youtube tv$/i, /prime video|amazon/i, /disney/i, /plex/i, /spotify/i];
+function discover() {
+  try {
+    if (!(window.tizen && tizen.application && tizen.application.getAppsInfo)) return;
+    tizen.application.getAppsInfo(function (list) {
+      INSTALLED = list.slice().sort(function (a, b) { return String(a.name).toLowerCase() < String(b.name).toLowerCase() ? -1 : 1; });
+      MATCH.forEach(function (re, n) {
+        for (var k = 0; k < INSTALLED.length; k++) if (re.test(INSTALLED[k].name)) { ITEMS[n].id = INSTALLED[k].id; break; }
+      });
+      for (var k = 0; k < INSTALLED.length; k++) if (/^(settings|beállítások|setting)$/i.test(INSTALLED[k].name)) { TV_ID = INSTALLED[k].id; break; }
+    }, function () {});
+  } catch (e) {}
+}
 function optIndex(r) { for (var k = 0; k < r.opts.length; k++) if (r.opts[k][0] === S[r.key]) return k; return 0; }
+function drawApps() {
+  var h = "";
+  if (!INSTALLED.length) h = '<div class="row sm"><span>A telepített appok listája nem érhető el (Tizen API hiányzik).</span></div>';
+  for (var k = aoff; k < Math.min(aoff + 9, INSTALLED.length); k++)
+    h += '<div class="row sm' + (k === arow ? " focus" : "") + '"><span>' + INSTALLED[k].name + '</span><span class="val">' + (k + 1) + " / " + INSTALLED.length + "</span></div>";
+  $("rows").innerHTML = h;
+  $("ptitle").textContent = "Összes alkalmazás";
+}
 function drawPanel() {
+  if (pview === "apps") return drawApps();
+  $("ptitle").textContent = "Beállítások";
   var h = "";
   ROWS.forEach(function (r, n) {
     var v = r.opts ? "&#8249; " + r.opts[optIndex(r)][1] + " &#8250;" : "";
@@ -188,7 +218,7 @@ function drawPanel() {
   });
   $("rows").innerHTML = h;
 }
-function openPanel() { panel = true; prow = 0; $("panel").classList.remove("hide"); drawPanel(); }
+function openPanel() { panel = true; pview = "main"; prow = 0; $("panel").classList.remove("hide"); drawPanel(); }
 function closePanel() { panel = false; $("panel").classList.add("hide"); }
 function change(dir) {
   var r = ROWS[prow]; if (!r.opts) return;
@@ -196,7 +226,19 @@ function change(dir) {
   S[r.key] = r.opts[n][0]; save(); apply(); drawPanel();
   if (r.key === "city") weather();
 }
+function appsKey(k) {
+  var n = INSTALLED.length;
+  if (k === 10009 || k === 27 || k === 8) { pview = "main"; return drawPanel(); }
+  if (!n) return;
+  if (k === 38) arow = Math.max(arow - 1, 0);
+  else if (k === 40) arow = Math.min(arow + 1, n - 1);
+  else if (k === 13) { closePanel(); return launchId(INSTALLED[arow].id, INSTALLED[arow].name); }
+  if (arow < aoff) aoff = arow;
+  if (arow >= aoff + 9) aoff = arow - 8;
+  drawApps();
+}
 function panelKey(k) {
+  if (pview === "apps") return appsKey(k);
   if (k === 10009 || k === 27 || k === 8) return closePanel();
   if (k === 38) prow = (prow + ROWS.length - 1) % ROWS.length;
   else if (k === 40) prow = (prow + 1) % ROWS.length;
@@ -205,7 +247,8 @@ function panelKey(k) {
   else if (k === 13) {
     var r = ROWS[prow];
     if (r.act === "close") return closePanel();
-    if (r.act === "tv") { closePanel(); return launchId(TV_SETTINGS_ID, "TV beállítások", "A TV beállításai innen nem nyithatók. Használd a távirányító Settings gombját."); }
+    if (r.act === "apps") { pview = "apps"; aoff = arow = 0; return drawPanel(); }
+    if (r.act === "tv") { closePanel(); return launchId(TV_ID, "TV beállítások", "A TV beállításai innen nem nyithatók. Keresd az Összes alkalmazás listában, vagy használd a távirányító Settings gombját."); }
     change(1);
   }
   drawPanel();
@@ -252,7 +295,7 @@ function weather() {
   x.send();
 }
 
-load(); apply();
+load(); apply(); discover();
 tick(); setInterval(tick, 20000);
 weather(); setInterval(weather, 30 * 60 * 1000);
 setTimeout(function () { $("hint").classList.add("off"); }, 8000);
