@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920">
+<title>Launcher</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:1920px; height:1080px; overflow:hidden; background:#0d1230; color:#fff; font-family:"Segoe UI",Helvetica,Arial,sans-serif; }
+  #scene { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+  .hide { display:none !important; }
+
+  #top { position:absolute; top:48px; left:96px; right:96px; height:90px; }
+  #date { position:absolute; left:0; top:12px; font-size:30px; opacity:.85; text-transform:capitalize; }
+  #right { position:absolute; right:0; top:0; text-align:right; }
+  #clock { font-size:64px; font-weight:300; line-height:64px; }
+  #wx { font-size:26px; opacity:.85; margin-top:6px; }
+
+  .glass { background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.35); border-radius:40px; box-shadow:0 20px 50px rgba(0,0,0,.45); }
+  .icon { position:relative; flex:none; border-radius:24%; color:#fff; font-weight:600; text-align:center;
+          transition:transform .18s ease, box-shadow .18s ease; box-shadow:0 8px 18px rgba(0,0,0,.4); overflow:hidden; }
+  .icon span { position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); }
+  .icon::after { content:""; position:absolute; left:0; top:0; right:0; bottom:0; background:linear-gradient(150deg,rgba(255,255,255,.28),rgba(255,255,255,0) 55%); }
+  .icon.focus { transform:scale(1.2); box-shadow:0 24px 44px rgba(0,0,0,.6), 0 0 0 5px #fff; z-index:3; }
+
+  #night #dock { position:absolute; left:50%; bottom:90px; margin-left:-560px; width:1120px; height:230px; padding:34px 40px; display:flex; justify-content:space-between; align-items:center; }
+  #night .icon { width:132px; height:132px; font-size:26px; }
+  #night #name { position:absolute; left:0; right:0; bottom:46px; text-align:center; font-size:30px; font-weight:500; text-shadow:0 2px 8px rgba(0,0,0,.6); }
+
+  #classic { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#10162f; }
+  #classic #hero { position:absolute; left:96px; top:200px; }
+  #classic #hero h1 { font-size:92px; font-weight:700; letter-spacing:-1px; }
+  #classic #hero p { font-size:30px; opacity:.65; margin-top:10px; }
+  #classic #grid { position:absolute; left:96px; top:470px; width:1728px; }
+  #classic #grid .icon { float:left; width:240px; height:150px; margin:0 56px 56px 0; border-radius:20px; font-size:32px; }
+  #classic #cdock { position:absolute; left:50%; bottom:70px; margin-left:-340px; width:680px; height:150px; padding:20px 36px; display:flex; justify-content:space-between; align-items:center; border-radius:36px; }
+  #classic #cdock .icon { width:96px; height:96px; font-size:22px; }
+
+  #toast { position:absolute; bottom:24px; left:0; right:0; text-align:center; font-size:24px; opacity:0; transition:opacity .3s; text-shadow:0 2px 8px #000; }
+  #toast.show { opacity:.95; }
+  #hint { position:absolute; right:96px; bottom:24px; font-size:20px; opacity:.45; }
+</style>
+</head>
+<body>
+
+<div id="night">
+  <svg id="scene" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070a1f"/><stop offset="1" stop-color="#1c2558"/></linearGradient>
+    </defs>
+    <rect width="1920" height="1080" fill="url(#sky)"/>
+    <g fill="#fff" opacity=".85">
+      <circle cx="210" cy="140" r="2.5"/><circle cx="520" cy="240" r="2"/><circle cx="900" cy="110" r="2.5"/><circle cx="1150" cy="300" r="2"/>
+      <circle cx="1650" cy="100" r="2"/><circle cx="410" cy="360" r="2"/><circle cx="1320" cy="180" r="2.5"/><circle cx="760" cy="330" r="1.5"/>
+    </g>
+    <circle cx="1500" cy="270" r="130" fill="#e8ecff" opacity=".08"/>
+    <circle cx="1500" cy="270" r="84" fill="#e8ecff"/>
+    <path d="M0 760 L260 540 L480 680 L800 440 L1150 700 L1450 520 L1920 730 L1920 1080 L0 1080Z" fill="#232b5e"/>
+    <path d="M0 860 L340 660 L640 840 L1000 620 L1380 840 L1700 700 L1920 800 L1920 1080 L0 1080Z" fill="#171d46"/>
+    <path d="M0 960 L430 830 L850 950 L1250 850 L1920 960 L1920 1080 L0 1080Z" fill="#0f1332"/>
+  </svg>
+  <div id="dock" class="glass"></div>
+  <div id="name"></div>
+</div>
+
+<div id="classic" class="hide">
+  <div id="hero"><h1 id="ctitle"></h1><p id="csub"></p></div>
+  <div id="grid"></div>
+  <div id="cdock" class="glass"></div>
+</div>
+
+<div id="top">
+  <div id="date"></div>
+  <div id="right"><div id="clock"></div><div id="wx"></div></div>
+</div>
+<div id="toast"></div>
+<div id="hint">1 Night Scenes · 2 Classic</div>
+
+<script>
+// ponytail: appId-k Samsung alapértelmezések, modellenként eltérhetnek; a TV-n ellenőrizd.
+var APPS = [
+  { name:"Netflix", id:"3201907018807", color:"#e50914", sub:"Sorozatok és filmek" },
+  { name:"YouTube", id:"111299001912",  color:"#ff0033", sub:"Videók" },
+  { name:"Prime",   id:"3201910019365", color:"#00a8e1", sub:"Prime Video" },
+  { name:"Disney+", id:"3201901017640", color:"#113ccf", sub:"Disney+" },
+  { name:"Plex",    id:"3201512006963", color:"#e5a00d", sub:"Saját médiatár" },
+  { name:"Spotify", id:"3201606009684", color:"#1db954", sub:"Zene" }
+];
+var FAV = [0, 1, 5];
+var COLS = 5;
+var LAT = 46.36, LON = 17.66;
+var mode = "night", zone = "grid", idx = 0, fidx = 0;
+
+function $(id) { return document.getElementById(id); }
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} }
+
+function mkIcon(a) {
+  var d = document.createElement("div");
+  d.className = "icon";
+  d.style.background = "linear-gradient(145deg," + a.color + ",#000b)";
+  d.innerHTML = "<span>" + a.name + "</span>";
+  return d;
+}
+function fill(parent, list) {
+  parent.innerHTML = "";
+  list.forEach(function (n) { parent.appendChild(mkIcon(APPS[n])); });
+  return parent.children;
+}
+var all = APPS.map(function (_, n) { return n; });
+var nightEls = fill($("dock"), all);
+var gridEls  = fill($("grid"), all);
+var favEls   = fill($("cdock"), FAV);
+
+function clear(els) { for (var k = 0; k < els.length; k++) els[k].classList.remove("focus"); }
+function render() {
+  clear(nightEls); clear(gridEls); clear(favEls);
+  if (mode === "night") {
+    nightEls[idx].classList.add("focus");
+    $("name").textContent = APPS[idx].name;
+  } else if (zone === "grid") {
+    gridEls[idx].classList.add("focus");
+    $("ctitle").textContent = APPS[idx].name; $("csub").textContent = APPS[idx].sub;
+  } else {
+    favEls[fidx].classList.add("focus");
+    var a = APPS[FAV[fidx]];
+    $("ctitle").textContent = a.name; $("csub").textContent = a.sub;
+  }
+}
+function setMode(m) {
+  mode = m; zone = "grid";
+  $("night").classList.toggle("hide", m !== "night");
+  $("classic").classList.toggle("hide", m !== "classic");
+  store("mode", m); render();
+}
+function toast(t) { var e = $("toast"); e.textContent = t; e.classList.add("show"); setTimeout(function () { e.classList.remove("show"); }, 2500); }
+function launch(a) {
+  try {
+    if (window.tizen && tizen.application) { tizen.application.launch(a.id, null, function () { toast("Nem indítható: " + a.name); }); return; }
+  } catch (e) {}
+  toast("Tizen API nem elérhető (böngészőben nem indul): " + a.name);
+}
+function cur() { return mode === "classic" && zone === "dock" ? APPS[FAV[fidx]] : APPS[idx]; }
+
+document.addEventListener("keydown", function (e) {
+  var k = e.keyCode, n = APPS.length;
+  if (k === 49 || k === 403) return setMode("night");
+  if (k === 50 || k === 404) return setMode("classic");
+  if (k === 13) return launch(cur());
+  if (mode === "night") {
+    if (k === 39) idx = (idx + 1) % n; else if (k === 37) idx = (idx + n - 1) % n;
+  } else if (zone === "grid") {
+    if (k === 39) idx = Math.min(idx + 1, n - 1);
+    else if (k === 37) idx = Math.max(idx - 1, 0);
+    else if (k === 38) idx = Math.max(idx - COLS, 0);
+    else if (k === 40) { if (idx + COLS < n) idx += COLS; else { zone = "dock"; fidx = 0; } }
+  } else {
+    if (k === 39) fidx = Math.min(fidx + 1, FAV.length - 1);
+    else if (k === 37) fidx = Math.max(fidx - 1, 0);
+    else if (k === 38) zone = "grid";
+  }
+  render();
+});
+
+function tick() {
+  var d = new Date();
+  $("clock").textContent = d.toLocaleTimeString("hu-HU", { hour:"2-digit", minute:"2-digit" });
+  $("date").textContent = d.toLocaleDateString("hu-HU", { weekday:"long", month:"long", day:"numeric" });
+}
+
+var WX = { 0:"derült", 1:"enyhén felhős", 2:"részben felhős", 3:"borult", 45:"köd", 48:"zúzmarás köd", 51:"szitálás", 53:"szitálás", 55:"szitálás",
+           61:"eső", 63:"eső", 65:"zuhogó eső", 71:"hószállingó", 73:"havazás", 75:"erős havazás", 80:"zápor", 81:"zápor", 82:"heves zápor", 95:"zivatar", 96:"zivatar", 99:"zivatar" };
+function weather() {
+  var x = new XMLHttpRequest();
+  x.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + LAT + "&longitude=" + LON + "&current=temperature_2m,weather_code&timezone=Europe%2FBudapest");
+  x.timeout = 10000;
+  x.onload = function () {
+    try {
+      var c = JSON.parse(x.responseText).current;
+      $("wx").textContent = "Kaposfő · " + Math.round(c.temperature_2m) + " °C · " + (WX[c.weather_code] || "");
+    } catch (e) { $("wx").textContent = "Kaposfő"; }
+  };
+  x.onerror = x.ontimeout = function () { $("wx").textContent = "Kaposfő"; };
+  x.send();
+}
+
+tick(); setInterval(tick, 20000);
+weather(); setInterval(weather, 30 * 60 * 1000);
+setMode(store("mode") === "classic" ? "classic" : "night");
+</script>
+</body>
+</html>
