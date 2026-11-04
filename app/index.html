@@ -9,15 +9,15 @@
   html,body { width:1920px; height:1080px; overflow:hidden; background:#08080c; color:#fff;
     font-family:"SamsungOne","Segoe UI",-apple-system,Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
   .hide { display:none !important; }
+  .sec { color:rgba(255,255,255,.62); }
 
-  /* ambient háttér: az app színe lágyan átúszik (csak opacity) */
+  /* háttér: kép + olvashatósági árnyék + app-színű fény (csak opacity animál) */
   #amb { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#08080c; }
-  #amb .g { position:absolute; left:0; top:0; width:1920px; height:1080px; opacity:0; transition:opacity 600ms ease; }
-  #amb .g.on { opacity:1; }
-  #amb .base { opacity:1; background:radial-gradient(1100px 700px at 12% 105%, rgba(70,60,160,.35), rgba(0,0,0,0) 70%); }
-
-  /* közös */
-  .sec { color:rgba(255,255,255,.6); }
+  #bg { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#08080c url(bg.jpg) center/cover no-repeat; }
+  #scrim { position:absolute; left:0; top:0; width:1920px; height:1080px;
+    background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,0) 55%), linear-gradient(0deg,rgba(0,0,0,.55),rgba(0,0,0,0) 45%); }
+  #glows .g { position:absolute; left:0; top:0; width:1920px; height:1080px; opacity:0; transition:opacity 600ms ease; }
+  #glows .g.on { opacity:.75; }
 
   /* HOME */
   #clock { position:absolute; left:120px; top:150px; font-size:210px; line-height:210px; font-weight:200; letter-spacing:-6px; }
@@ -25,16 +25,16 @@
   #wx { position:absolute; left:128px; top:380px; font-size:34px; font-weight:400; }
 
   #dock { position:absolute; left:0; width:1920px; bottom:170px; text-align:center; font-size:0; }
-  .tile { position:relative; display:inline-block; vertical-align:top; width:200px; height:200px; margin:0 18px; border-radius:46px;
-    text-align:center; line-height:200px; font-size:76px; font-weight:600; letter-spacing:-2px; color:#fff;
+  .tile { position:relative; display:inline-flex; align-items:center; justify-content:center; vertical-align:top; width:200px; height:200px; margin:0 18px; border-radius:46px;
     transform:translateZ(0) scale(1); transition:transform 180ms cubic-bezier(.23,1,.32,1); }
-  .tile::before { content:""; position:absolute; left:0; top:0; width:200px; height:200px; border-radius:46px; z-index:-1;
+  .tile::before, .card::before { content:""; position:absolute; left:0; top:0; right:0; bottom:0; border-radius:46px; z-index:-1;
     box-shadow:0 34px 60px rgba(0,0,0,.65); opacity:0; transition:opacity 180ms cubic-bezier(.23,1,.32,1); }
-  .tile::after { content:""; position:absolute; left:0; top:0; right:0; bottom:0; border-radius:46px; opacity:.55;
-    background:linear-gradient(160deg, rgba(255,255,255,.34), rgba(255,255,255,0) 48%); transition:opacity 180ms cubic-bezier(.23,1,.32,1); }
+  .tile::after, .card::after { content:""; position:absolute; left:0; top:0; right:0; bottom:0; border-radius:46px; opacity:.5; pointer-events:none;
+    background:linear-gradient(160deg, rgba(255,255,255,.32), rgba(255,255,255,0) 48%); transition:opacity 180ms cubic-bezier(.23,1,.32,1); }
+  .tile img { max-width:110px; max-height:100px; }
+  .tile svg { width:96px; height:96px; fill:#fff; }
   .tile.focus { transform:translateZ(0) scale(1.14); }
-  .tile.focus::before { opacity:1; }
-  .tile.focus::after { opacity:1; }
+  .tile.focus::before, .card.focus::before, .tile.focus::after, .card.focus::after { opacity:1; }
   .tile.press { transform:translateZ(0) scale(1.07); transition-duration:90ms; }
   #label { position:absolute; left:0; width:1920px; bottom:92px; text-align:center; font-size:34px; font-weight:500; }
 
@@ -44,30 +44,35 @@
   #hero p { font-size:40px; margin-top:20px; font-weight:400; }
   #view { position:absolute; left:0; top:600px; width:1920px; height:330px; overflow:hidden; }
   #row { position:absolute; left:128px; top:50px; white-space:nowrap; font-size:0; transition:transform 300ms cubic-bezier(.23,1,.32,1); }
-  .card { position:relative; display:inline-block; vertical-align:top; width:380px; height:214px; margin-right:44px; border-radius:30px;
-    text-align:left; font-size:46px; font-weight:700; letter-spacing:-1px; color:#fff; padding:0 0 0 34px; line-height:214px;
+  .card { position:relative; display:inline-flex; align-items:center; justify-content:center; vertical-align:top; width:380px; height:214px; margin-right:44px; border-radius:30px;
     transform:translateZ(0) scale(1); transition:transform 180ms cubic-bezier(.23,1,.32,1); }
-  .card::before { content:""; position:absolute; left:0; top:0; width:380px; height:214px; border-radius:30px; z-index:-1;
-    box-shadow:0 34px 60px rgba(0,0,0,.65); opacity:0; transition:opacity 180ms cubic-bezier(.23,1,.32,1); }
-  .card::after { content:""; position:absolute; left:0; top:0; right:0; bottom:0; border-radius:30px; opacity:.5;
-    background:linear-gradient(160deg, rgba(255,255,255,.34), rgba(255,255,255,0) 50%); transition:opacity 180ms cubic-bezier(.23,1,.32,1); }
+  .card::before, .card::after { border-radius:30px; }
+  .card img { max-width:190px; max-height:90px; }
+  .card svg { width:84px; height:84px; fill:#fff; }
   .card.focus { transform:translateZ(0) scale(1.1); }
-  .card.focus::before { opacity:1; }
-  .card.focus::after { opacity:1; }
   .card.press { transform:translateZ(0) scale(1.05); transition-duration:90ms; }
-
-  /* kis óra shelf módban */
   #mini { position:absolute; right:120px; top:104px; text-align:right; font-size:40px; font-weight:500; }
 
-  #toast { position:absolute; left:0; width:1920px; bottom:30px; text-align:center; font-size:26px; opacity:0; transition:opacity 200ms ease; }
+  /* BEÁLLÍTÁSOK */
+  #panel { position:absolute; left:0; top:0; width:1920px; height:1080px; background:rgba(0,0,0,.6); }
+  #box { position:absolute; left:50%; top:50%; width:1040px; margin-left:-520px; margin-top:-360px; padding:44px 48px; border-radius:44px;
+    background:rgba(34,34,42,.96); box-shadow:0 40px 90px rgba(0,0,0,.7); }
+  #box h2 { font-size:44px; font-weight:600; margin-bottom:28px; }
+  .row { display:flex; align-items:center; justify-content:space-between; height:88px; padding:0 32px; margin-bottom:8px; border-radius:22px; font-size:34px; }
+  .row.focus { background:rgba(255,255,255,.16); }
+  .row .val { color:rgba(255,255,255,.7); }
+  .row.focus .val { color:#fff; }
+  #phint { margin-top:20px; font-size:24px; }
+
+  #toast { position:absolute; left:0; width:1920px; bottom:30px; text-align:center; font-size:26px; opacity:0; transition:opacity 200ms ease; text-shadow:0 2px 10px #000; }
   #toast.show { opacity:1; }
-  #hint { position:absolute; right:120px; bottom:40px; font-size:22px; opacity:.5; transition:opacity 600ms ease; }
+  #hint { position:absolute; right:120px; bottom:40px; font-size:22px; opacity:.55; transition:opacity 600ms ease; }
   #hint.off { opacity:0; }
 </style>
 </head>
 <body>
 
-<div id="amb"><div class="g base"></div></div>
+<div id="amb"><div id="bg"></div><div id="glows"></div><div id="scrim"></div></div>
 
 <div id="home">
   <div id="date" class="sec"></div>
@@ -83,79 +88,140 @@
   <div id="view"><div id="row"></div></div>
 </div>
 
+<div id="panel" class="hide"><div id="box"><h2>Beállítások</h2><div id="rows"></div><div id="phint" class="sec">Fel/le: kijelölés · Balra/jobbra: érték · OK: választás · Vissza: bezár</div></div></div>
+
 <div id="toast"></div>
 <div id="hint">1 Home · 2 Polc</div>
 
 <script>
 // ponytail: appId-k Samsung alapértelmezések, modellenként eltérhetnek; a TV-n ellenőrizd.
-// ponytail: a glyph egyszerű monogram, saját logók később: tile.style.backgroundImage.
-var APPS = [
-  { name:"Netflix", id:"3201907018807", color:"#e50914", glyph:"N",  sub:"Sorozatok és filmek" },
-  { name:"YouTube", id:"111299001912",  color:"#ff2d3d", glyph:"YT", sub:"Videók" },
-  { name:"Prime",   id:"3201910019365", color:"#1a98ff", glyph:"P",  sub:"Prime Video" },
-  { name:"Disney+", id:"3201901017640", color:"#1b4dff", glyph:"D+", sub:"Disney+" },
-  { name:"Plex",    id:"3201512006963", color:"#e5a00d", glyph:"Pl", sub:"Saját médiatár" },
-  { name:"Spotify", id:"3201606009684", color:"#1ed760", glyph:"S",  sub:"Zene" }
+var GEAR = "M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z";
+var ITEMS = [
+  { name:"Netflix", id:"3201907018807", color:"#e50914", logo:"logos/netflix.svg",    sub:"Sorozatok és filmek" },
+  { name:"YouTube", id:"111299001912",  color:"#ff0000", logo:"logos/youtube.svg",    sub:"Videók" },
+  { name:"Prime",   id:"3201910019365", color:"#00a8e1", logo:"logos/primevideo.svg", sub:"Prime Video" },
+  { name:"Disney+", id:"3201901017640", color:"#113ccf", logo:"logos/disneyplus.svg", sub:"Disney+" },
+  { name:"Plex",    id:"3201512006963", color:"#e5a00d", logo:"logos/plex.svg",       sub:"Saját médiatár" },
+  { name:"Spotify", id:"3201606009684", color:"#1ed760", logo:"logos/spotify.svg",    sub:"Zene" },
+  { name:"Beállítások", settings:true,  color:"#6b6b78", sub:"Nézet, város, háttér" }
 ];
-var LAT = 46.36, LON = 17.66;      // Kaposfő (kb.)
-var mode = "home", idx = 0;
+var CITIES = [
+  { name:"Kaposfő",  lat:46.36,  lon:17.66 },
+  { name:"Kaposvár", lat:46.3594, lon:17.7968 },
+  { name:"Siófok",   lat:46.9041, lon:18.0579 },
+  { name:"Pécs",     lat:46.0727, lon:18.2323 },
+  { name:"Budapest", lat:47.4979, lon:19.0402 }
+];
+// ponytail: a Samsung beállítások app azonosítója nem ellenőrzött; 2017-es modelleken lehet, hogy nem indítható.
+var TV_SETTINGS_ID = "org.tizen.menu-setting";
+
+var S = { mode:"home", city:0, bg:"on", glow:"on" };
+var idx = 0, panel = false, prow = 0;
 
 function $(id) { return document.getElementById(id); }
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} }
-function paint(el, c) { el.style.background = "linear-gradient(180deg," + c + ",rgba(0,0,0,.55)), " + c; }
+function load() { try { var j = JSON.parse(store("s") || "{}"); for (var k in j) if (k in S) S[k] = j[k]; } catch (e) {} if (!CITIES[S.city]) S.city = 0; }
+function save() { store("s", JSON.stringify(S)); }
+function paint(el, c) { el.style.background = "linear-gradient(180deg," + c + ",rgba(0,0,0,.5)), " + c; }
+function content(el, a) {
+  if (a.settings) el.innerHTML = '<svg viewBox="0 0 24 24"><path d="' + GEAR + '"/></svg>';
+  else el.innerHTML = '<img src="' + a.logo + '" alt="' + a.name + '">';
+}
 
 var glows = [], tiles = [], cards = [];
-APPS.forEach(function (a, n) {
+ITEMS.forEach(function (a) {
   var g = document.createElement("div");
   g.className = "g";
-  g.style.background = "radial-gradient(1000px 640px at 78% 8%," + a.color + "66,rgba(0,0,0,0) 70%)";
-  $("amb").appendChild(g); glows.push(g);
+  g.style.background = "radial-gradient(1000px 640px at 78% 8%," + a.color + "88,rgba(0,0,0,0) 70%)";
+  $("glows").appendChild(g); glows.push(g);
 
-  var t = document.createElement("div");
-  t.className = "tile"; t.textContent = a.glyph; paint(t, a.color);
+  var t = document.createElement("div"); t.className = "tile"; paint(t, a.color); content(t, a);
   $("dock").appendChild(t); tiles.push(t);
 
-  var c = document.createElement("div");
-  c.className = "card"; c.textContent = a.name; paint(c, a.color);
+  var c = document.createElement("div"); c.className = "card"; paint(c, a.color); content(c, a);
   $("row").appendChild(c); cards.push(c);
 });
 
 function render() {
-  for (var k = 0; k < APPS.length; k++) {
+  for (var k = 0; k < ITEMS.length; k++) {
     var on = k === idx;
-    tiles[k].classList.toggle("focus", on && mode === "home");
-    cards[k].classList.toggle("focus", on && mode === "shelf");
+    tiles[k].classList.toggle("focus", on && S.mode === "home");
+    cards[k].classList.toggle("focus", on && S.mode === "shelf");
     glows[k].classList.toggle("on", on);
   }
-  $("label").textContent = APPS[idx].name;
-  $("ctitle").textContent = APPS[idx].name;
-  $("csub").textContent = APPS[idx].sub;
+  $("label").textContent = ITEMS[idx].name;
+  $("ctitle").textContent = ITEMS[idx].name;
+  $("csub").textContent = ITEMS[idx].sub;
   $("row").style.webkitTransform = $("row").style.transform = "translateX(" + (-Math.max(0, idx - 2) * 424) + "px)";
 }
-function setMode(m) {
-  mode = m;
-  $("home").classList.toggle("hide", m !== "home");
-  $("shelf").classList.toggle("hide", m !== "shelf");
-  store("mode", m); render();
-}
-function toast(t) { var e = $("toast"); e.textContent = t; e.classList.add("show"); setTimeout(function () { e.classList.remove("show"); }, 2500); }
-function launch(a) {
-  try {
-    if (window.tizen && tizen.application) { tizen.application.launch(a.id, null, function () { toast("Nem indítható: " + a.name); }); return; }
-  } catch (e) {}
-  toast("Tizen API nem elérhető (böngészőben nem indul): " + a.name);
-}
-function press() {
-  var el = mode === "home" ? tiles[idx] : cards[idx];
-  el.classList.add("press"); setTimeout(function () { el.classList.remove("press"); }, 120);
+function apply() {
+  $("home").classList.toggle("hide", S.mode !== "home");
+  $("shelf").classList.toggle("hide", S.mode !== "shelf");
+  $("bg").classList.toggle("hide", S.bg !== "on");
+  $("glows").classList.toggle("hide", S.glow !== "on");
+  render();
 }
 
+function toast(t) { var e = $("toast"); e.textContent = t; e.classList.add("show"); setTimeout(function () { e.classList.remove("show"); }, 3000); }
+function launchId(id, name, fail) {
+  try {
+    if (window.tizen && tizen.application) { tizen.application.launch(id, null, function () { toast(fail || ("Nem indítható: " + name)); }); return; }
+  } catch (e) { toast(fail || ("Nem indítható: " + name)); return; }
+  toast("Tizen API nem elérhető (böngészőben nem indul): " + name);
+}
+
+/* beállítások panel */
+var ROWS = [
+  { label:"Nézet",       key:"mode", opts:[["home","Home"],["shelf","Polc"]] },
+  { label:"Város",       key:"city", opts:CITIES.map(function (c, n) { return [n, c.name]; }) },
+  { label:"Háttérkép",   key:"bg",   opts:[["on","Be"],["off","Ki"]] },
+  { label:"Színes fény", key:"glow", opts:[["on","Be"],["off","Ki"]] },
+  { label:"TV beállítások", act:"tv" },
+  { label:"Bezárás",        act:"close" }
+];
+function optIndex(r) { for (var k = 0; k < r.opts.length; k++) if (r.opts[k][0] === S[r.key]) return k; return 0; }
+function drawPanel() {
+  var h = "";
+  ROWS.forEach(function (r, n) {
+    var v = r.opts ? "&#8249; " + r.opts[optIndex(r)][1] + " &#8250;" : "";
+    h += '<div class="row' + (n === prow ? " focus" : "") + '"><span>' + r.label + '</span><span class="val">' + v + "</span></div>";
+  });
+  $("rows").innerHTML = h;
+}
+function openPanel() { panel = true; prow = 0; $("panel").classList.remove("hide"); drawPanel(); }
+function closePanel() { panel = false; $("panel").classList.add("hide"); }
+function change(dir) {
+  var r = ROWS[prow]; if (!r.opts) return;
+  var n = (optIndex(r) + dir + r.opts.length) % r.opts.length;
+  S[r.key] = r.opts[n][0]; save(); apply(); drawPanel();
+  if (r.key === "city") weather();
+}
+function panelKey(k) {
+  if (k === 10009 || k === 27 || k === 8) return closePanel();
+  if (k === 38) prow = (prow + ROWS.length - 1) % ROWS.length;
+  else if (k === 40) prow = (prow + 1) % ROWS.length;
+  else if (k === 37) change(-1);
+  else if (k === 39) change(1);
+  else if (k === 13) {
+    var r = ROWS[prow];
+    if (r.act === "close") return closePanel();
+    if (r.act === "tv") { closePanel(); return launchId(TV_SETTINGS_ID, "TV beállítások", "A TV beállításai innen nem nyithatók. Használd a távirányító Settings gombját."); }
+    change(1);
+  }
+  drawPanel();
+}
+
+function press() {
+  var el = S.mode === "home" ? tiles[idx] : cards[idx];
+  el.classList.add("press"); setTimeout(function () { el.classList.remove("press"); }, 120);
+}
 document.addEventListener("keydown", function (e) {
-  var k = e.keyCode, n = APPS.length;
+  var k = e.keyCode, n = ITEMS.length;
   $("hint").classList.add("off");
-  if (k === 49 || k === 403) return setMode("home");
-  if (k === 50 || k === 404) return setMode("shelf");
-  if (k === 13) { press(); return launch(APPS[idx]); }
+  if (panel) return panelKey(k);
+  if (k === 49 || k === 403) { S.mode = "home"; save(); return apply(); }
+  if (k === 50 || k === 404) { S.mode = "shelf"; save(); return apply(); }
+  if (k === 13) { press(); return ITEMS[idx].settings ? openPanel() : launchId(ITEMS[idx].id, ITEMS[idx].name); }
   if (k === 39) idx = Math.min(idx + 1, n - 1);
   else if (k === 37) idx = Math.max(idx - 1, 0);
   render();
@@ -172,23 +238,24 @@ var WX = { 0:"derült", 1:"enyhén felhős", 2:"részben felhős", 3:"borult", 4
            61:"eső", 63:"eső", 65:"zuhogó eső", 71:"hószállingó", 73:"havazás", 75:"erős havazás", 80:"zápor", 81:"zápor", 82:"heves zápor", 95:"zivatar", 96:"zivatar", 99:"zivatar" };
 function setWx(t) { $("wx").textContent = t; $("mwx").textContent = t; }
 function weather() {
+  var c = CITIES[S.city];
+  setWx(c.name);
   var x = new XMLHttpRequest();
-  x.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + LAT + "&longitude=" + LON + "&current=temperature_2m,weather_code&timezone=Europe%2FBudapest");
+  x.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + c.lat + "&longitude=" + c.lon + "&current=temperature_2m,weather_code&timezone=Europe%2FBudapest");
   x.timeout = 10000;
   x.onload = function () {
     try {
-      var c = JSON.parse(x.responseText).current;
-      setWx("Kaposfő · " + Math.round(c.temperature_2m) + " °C · " + (WX[c.weather_code] || ""));
-    } catch (e) { setWx("Kaposfő"); }
+      var cur = JSON.parse(x.responseText).current;
+      setWx(c.name + " · " + Math.round(cur.temperature_2m) + " °C · " + (WX[cur.weather_code] || ""));
+    } catch (e) {}
   };
-  x.onerror = x.ontimeout = function () { setWx("Kaposfő"); };
   x.send();
 }
 
+load(); apply();
 tick(); setInterval(tick, 20000);
 weather(); setInterval(weather, 30 * 60 * 1000);
 setTimeout(function () { $("hint").classList.add("off"); }, 8000);
-setMode(store("mode") === "shelf" ? "shelf" : "home");
 </script>
 </body>
 </html>
