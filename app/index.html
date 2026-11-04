@@ -16,7 +16,7 @@
   #bg { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#08080c center/cover no-repeat; }
   #scrim { position:absolute; left:0; top:0; width:1920px; height:1080px;
     background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,0) 55%), linear-gradient(0deg,rgba(0,0,0,.55),rgba(0,0,0,0) 45%); }
-  #glows .g { position:absolute; left:0; top:0; width:1920px; height:1080px; opacity:0; transition:opacity 600ms ease; }
+  #glows .g { position:absolute; left:0; top:0; width:1920px; height:1080px; opacity:0; }
   #glows .g.on { opacity:.75; }
 
   /* HOME */
@@ -27,14 +27,14 @@
   #dock { position:absolute; left:0; width:1920px; bottom:170px; text-align:center; font-size:0; }
   .tile { position:relative; display:inline-flex; align-items:center; justify-content:center; vertical-align:top; width:200px; height:200px; margin:0 18px; border-radius:46px;
     transform:translateZ(0) scale(1); transition:transform 180ms cubic-bezier(.23,1,.32,1); }
-  .tile::before, .card::before { content:""; position:absolute; left:0; top:0; right:0; bottom:0; border-radius:46px; z-index:-1;
-    box-shadow:0 34px 60px rgba(0,0,0,.65); opacity:0; transition:opacity 180ms cubic-bezier(.23,1,.32,1); }
-  .tile::after, .card::after { content:""; position:absolute; left:0; top:0; right:0; bottom:0; border-radius:46px; opacity:.5; pointer-events:none;
-    background:linear-gradient(160deg, rgba(255,255,255,.32), rgba(255,255,255,0) 48%); transition:opacity 180ms cubic-bezier(.23,1,.32,1); }
-  .tile img { max-width:110px; max-height:100px; }
+  .tile::before, .card::before { content:""; position:absolute; left:0; top:0; right:0; bottom:0; border-radius:46px; border:6px solid #fff;
+    opacity:0; transition:opacity 120ms ease-out; }
+  .tile::after, .card::after { content:""; position:absolute; left:0; top:0; right:0; bottom:0; border-radius:46px; opacity:.45; pointer-events:none;
+    background:linear-gradient(160deg, rgba(255,255,255,.30), rgba(255,255,255,0) 48%); }
+  .tile img { width:110px; height:110px; }
   .tile svg { width:96px; height:96px; fill:#fff; }
   .tile.focus { transform:translateZ(0) scale(1.14); }
-  .tile.focus::before, .card.focus::before, .tile.focus::after, .card.focus::after { opacity:1; }
+  .tile.focus::before, .card.focus::before { opacity:1; }
   .tile.press { transform:translateZ(0) scale(1.07); transition-duration:90ms; }
   #label { position:absolute; left:0; width:1920px; bottom:92px; text-align:center; font-size:34px; font-weight:500; }
 
@@ -47,7 +47,8 @@
   .card { position:relative; display:inline-flex; align-items:center; justify-content:center; vertical-align:top; width:380px; height:214px; margin-right:44px; border-radius:30px;
     transform:translateZ(0) scale(1); transition:transform 180ms cubic-bezier(.23,1,.32,1); }
   .card::before, .card::after { border-radius:30px; }
-  .card img { max-width:190px; max-height:90px; }
+  .card::before { border-width:5px; }
+  .card img { width:200px; height:96px; }
   .card svg { width:84px; height:84px; fill:#fff; }
   .card.focus { transform:translateZ(0) scale(1.1); }
   .card.press { transform:translateZ(0) scale(1.05); transition-duration:90ms; }
@@ -71,11 +72,11 @@
   #hint { position:absolute; right:120px; bottom:40px; font-size:22px; opacity:.55; transition:opacity 600ms ease; }
   #hint.off { opacity:0; }
   /* Lightweight seasonal ambient layer; animation is compositor-friendly. */
-  #xmas { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-  #xmasGlow { position:absolute; inset:0;
+  #xmas { position:absolute; left:0; top:0; right:0; bottom:0; pointer-events:none; overflow:hidden; }
+  #xmasGlow { position:absolute; left:0; top:0; right:0; bottom:0;
     background:radial-gradient(900px 240px at 60% 82%,rgba(255,210,140,.26),transparent 70%);
     animation:xmasPulse 12s ease-in-out infinite; }
-  #snow, #sparkles { position:absolute; inset:0; }
+  #snow, #sparkles { position:absolute; left:0; top:0; right:0; bottom:0; }
   .flake { position:absolute; top:-14px; border-radius:50%; background:rgba(255,255,255,.85);
     animation-name:xmasSnow; animation-timing-function:linear; animation-iteration-count:infinite; }
   .flake.drift-left { animation-name:xmasSnowLeft; }
@@ -122,12 +123,12 @@
 // ponytail: appId-k Samsung alapértelmezések, modellenként eltérhetnek; a TV-n ellenőrizd.
 var GEAR = "M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z";
 var ITEMS = [
-  { name:"Netflix", id:"3201907018807", color:"#e50914", logo:"logos/netflix.svg",    sub:"Sorozatok és filmek" },
-  { name:"YouTube", id:"111299001912",  color:"#ff0000", logo:"logos/youtube.svg",    sub:"Videók" },
-  { name:"Prime",   id:"3201910019365", color:"#00a8e1", logo:"logos/primevideo.svg", sub:"Prime Video" },
-  { name:"Disney+", id:"3201901017640", color:"#113ccf", logo:"logos/disneyplus.svg", sub:"Disney+" },
-  { name:"Plex",    id:"3201512006963", color:"#e5a00d", logo:"logos/plex.svg",       sub:"Saját médiatár" },
-  { name:"Spotify", id:"3201606009684", color:"#1ed760", logo:"logos/spotify.svg",    sub:"Zene" },
+  { name:"Netflix", ids:["11101200001","3201907018807"], color:"#e50914", logo:"logos/netflix.svg",    sub:"Sorozatok és filmek" },
+  { name:"YouTube", ids:["111299001912"], color:"#ff0000", logo:"logos/youtube.svg",    sub:"Videók" },
+  { name:"Prime",   ids:["3201512006785","3201910019365"], color:"#00a8e1", logo:"logos/primevideo.svg", sub:"Prime Video" },
+  { name:"Disney+", ids:["3201901017640"], color:"#113ccf", logo:"logos/disneyplus.svg", sub:"Disney+" },
+  { name:"Plex",    ids:["3201512006963"], color:"#e5a00d", logo:"logos/plex.svg",       sub:"Saját médiatár" },
+  { name:"Spotify", ids:["3201606009684"], color:"#1ed760", logo:"logos/spotify.svg",    sub:"Zene" },
   { name:"Beállítások", settings:true,  color:"#6b6b78", sub:"Nézet, város, háttér" }
 ];
 var CITIES = [
@@ -137,12 +138,10 @@ var CITIES = [
   { name:"Pécs",     lat:46.0727, lon:18.2323 },
   { name:"Budapest", lat:47.4979, lon:19.0402 }
 ];
-// ponytail: a Samsung beállítások app azonosítója nem ellenőrzött; 2017-es modelleken lehet, hogy nem indítható.
-var TV_SETTINGS_ID = "org.tizen.menu-setting";
 
-var S = { mode:"home", city:0, bg:"1", glow:"on", xmas:"auto" };
+var S = { mode:"home", city:0, bg:"1", glow:"off", xmas:"auto" };
 var idx = 0, panel = false, prow = 0, pview = "main", aoff = 0, arow = 0;
-var INSTALLED = [], TV_ID = TV_SETTINGS_ID;
+var INSTALLED = [];
 
 function $(id) { return document.getElementById(id); }
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} }
@@ -229,11 +228,45 @@ function apply() {
 }
 
 function toast(t) { var e = $("toast"); e.textContent = t; e.classList.add("show"); setTimeout(function () { e.classList.remove("show"); }, 3000); }
-function launchId(id, name, fail) {
-  try {
-    if (window.tizen && tizen.application) { tizen.application.launch(id, null, function () { toast(fail || ("Nem indítható: " + name)); }); return; }
-  } catch (e) { toast(fail || ("Nem indítható: " + name)); return; }
-  toast("Tizen API nem elérhető (böngészőben nem indul): " + name);
+/* TV távirányító-csatorna: WebSocket a TV saját API-ján (app indítás, gombok, telepített appok).
+   Elsőre a TV "Engedélyezés" ablakot mutat. Csak használatkor csatlakozik, indításkor nem. */
+var TV = { ws:null, ready:false, q:[] };
+function tvOpen() {
+  if (TV.ws && TV.ws.readyState < 2) return;
+  var ws;
+  try { ws = new WebSocket("ws://127.0.0.1:8001/api/v2/channels/samsung.remote.control?name=" + btoa("Launcher")); }
+  catch (e) { toast("A TV távirányító csatornája nem érhető el."); return; }
+  TV.ws = ws; TV.ready = false;
+  ws.onmessage = function (e) {
+    var m; try { m = JSON.parse(e.data); } catch (x) { return; }
+    if (m.event === "ms.channel.connect") { TV.ready = true; while (TV.q.length) ws.send(TV.q.shift()); }
+    else if (m.event === "ed.installedApp.get") tvApps((m.data && m.data.data) || []);
+    else if (m.event === "ms.channel.timeOut") { TV.q = []; toast("A TV nem engedélyezte a kapcsolatot. Próbáld újra, és válaszd az Engedélyezést."); }
+  };
+  ws.onclose = function () { TV.ready = false; };
+  ws.onerror = function () { TV.q = []; toast("A TV távirányító csatornája nem érhető el."); };
+}
+function tvSend(o) { var s = JSON.stringify(o); if (TV.ready) TV.ws.send(s); else { TV.q.push(s); tvOpen(); } }
+function tvKey(k) { tvSend({ method:"ms.remote.control", params:{ Cmd:"Click", DataOfCmd:k, Option:"false", TypeOfRemote:"SendRemoteKey" } }); }
+function tvLaunch(ids, type) {
+  ids.forEach(function (id) {
+    (type ? [type] : ["DEEP_LINK", "NATIVE_LAUNCH"]).forEach(function (t) {
+      tvSend({ method:"ms.channel.emit", params:{ event:"ed.apps.launch", to:"host", data:{ action_type:t, appId:id } } });
+    });
+  });
+}
+function launchApp(a) {
+  var ids = a.ids || [a.id];
+  try { if (window.tizen && tizen.application) { tizen.application.launch(ids[0], null, function () { tvLaunch(ids, a.type); }); return; } } catch (e) {}
+  tvLaunch(ids, a.type);
+}
+function tvApps(list) {
+  INSTALLED = list.map(function (a) { return { name:a.name, id:a.appId, type:a.app_type === 2 ? "DEEP_LINK" : "NATIVE_LAUNCH" }; })
+    .sort(function (a, b) { return String(a.name).toLowerCase() < String(b.name).toLowerCase() ? -1 : 1; });
+  MATCH.forEach(function (re, n) {
+    for (var k = 0; k < INSTALLED.length; k++) if (re.test(INSTALLED[k].name)) { ITEMS[n].ids = [INSTALLED[k].id]; ITEMS[n].type = INSTALLED[k].type; break; }
+  });
+  if (panel && pview === "apps") drawApps();
 }
 
 /* beállítások panel */
@@ -243,7 +276,9 @@ var ROWS = [
   { label:"Háttérkép",   key:"bg",   opts:[["1","Éjszaka"],["2","Alkonyat"],["3","Aurora"],["4","Köd"],["5","Grafit"],["off","Egyszínű"]] },
   { label:"Színes fény", key:"glow", opts:[["on","Be"],["off","Ki"]] },
   { label:"Karácsonyi effekt", key:"xmas", opts:[["auto","Automatikus"],["on","Be"],["off","Ki"]] },
-  { label:"TV beállítások", act:"tv" },
+  { label:"TV menü és beállítások", act:"tvmenu" },
+  { label:"Forrás (HDMI, antenna)", act:"source" },
+  { label:"Samsung Smart Hub", act:"hub" },
   { label:"Összes alkalmazás", act:"apps" },
   { label:"Kilépés a TizenBrew-ba", act:"leave" },
   { label:"Bezárás",        act:"close" }
@@ -264,16 +299,15 @@ function discover() {
     tizen.application.getAppsInfo(function (list) {
       INSTALLED = list.slice().sort(function (a, b) { return String(a.name).toLowerCase() < String(b.name).toLowerCase() ? -1 : 1; });
       MATCH.forEach(function (re, n) {
-        for (var k = 0; k < INSTALLED.length; k++) if (re.test(INSTALLED[k].name)) { ITEMS[n].id = INSTALLED[k].id; break; }
+        for (var k = 0; k < INSTALLED.length; k++) if (re.test(INSTALLED[k].name)) { ITEMS[n].ids = [INSTALLED[k].id]; break; }
       });
-      for (var k = 0; k < INSTALLED.length; k++) if (/^(settings|beállítások|setting)$/i.test(INSTALLED[k].name)) { TV_ID = INSTALLED[k].id; break; }
     }, function () {});
   } catch (e) {}
 }
 function optIndex(r) { for (var k = 0; k < r.opts.length; k++) if (r.opts[k][0] === S[r.key]) return k; return 0; }
 function drawApps() {
   var h = "";
-  if (!INSTALLED.length) h = '<div class="row sm"><span>A telepített appok listája nem érhető el (Tizen API hiányzik).</span></div>';
+  if (!INSTALLED.length) h = '<div class="row sm"><span>Lista betöltése… (a TV engedélyt kérhet, válaszd az Engedélyezést)</span></div>';
   for (var k = aoff; k < Math.min(aoff + 9, INSTALLED.length); k++)
     h += '<div class="row sm' + (k === arow ? " focus" : "") + '"><span>' + INSTALLED[k].name + '</span><span class="val">' + (k + 1) + " / " + INSTALLED.length + "</span></div>";
   $("rows").innerHTML = h;
@@ -303,7 +337,7 @@ function appsKey(k) {
   if (!n) return;
   if (k === 38) arow = Math.max(arow - 1, 0);
   else if (k === 40) arow = Math.min(arow + 1, n - 1);
-  else if (k === 13) { closePanel(); return launchId(INSTALLED[arow].id, INSTALLED[arow].name); }
+  else if (k === 13) { closePanel(); return launchApp(INSTALLED[arow]); }
   if (arow < aoff) aoff = arow;
   if (arow >= aoff + 9) aoff = arow - 8;
   drawApps();
@@ -319,8 +353,10 @@ function panelKey(k) {
     var r = ROWS[prow];
     if (r.act === "close") return closePanel();
     if (r.act === "leave") return leave();
-    if (r.act === "apps") { pview = "apps"; aoff = arow = 0; return drawPanel(); }
-    if (r.act === "tv") { closePanel(); return launchId(TV_ID, "TV beállítások", "A TV beállításai innen nem nyithatók. Keresd az Összes alkalmazás listában, vagy használd a távirányító Settings gombját."); }
+    if (r.act === "apps") { pview = "apps"; aoff = arow = 0; if (!INSTALLED.length) tvSend({ method:"ms.channel.emit", params:{ event:"ed.installedApp.get", to:"host" } }); return drawPanel(); }
+    if (r.act === "tvmenu") { closePanel(); return tvKey("KEY_MENU"); }
+    if (r.act === "source") { closePanel(); return tvKey("KEY_SOURCE"); }
+    if (r.act === "hub") { closePanel(); return tvKey("KEY_HOME"); }
     change(1);
   }
   drawPanel();
@@ -337,7 +373,7 @@ document.addEventListener("keydown", function (e) {
   if (k === 10009 || k === 27 || k === 8) return leave();
   if (k === 49 || k === 403) { S.mode = "home"; save(); return apply(); }
   if (k === 50 || k === 404) { S.mode = "shelf"; save(); return apply(); }
-  if (k === 13) { press(); return ITEMS[idx].settings ? openPanel() : launchId(ITEMS[idx].id, ITEMS[idx].name); }
+  if (k === 13) { press(); return ITEMS[idx].settings ? openPanel() : launchApp(ITEMS[idx]); }
   if (k === 39) idx = Math.min(idx + 1, n - 1);
   else if (k === 37) idx = Math.max(idx - 1, 0);
   render();
