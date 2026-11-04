@@ -245,8 +245,16 @@ var ROWS = [
   { label:"Karácsonyi effekt", key:"xmas", opts:[["auto","Automatikus"],["on","Be"],["off","Ki"]] },
   { label:"TV beállítások", act:"tv" },
   { label:"Összes alkalmazás", act:"apps" },
+  { label:"Kilépés a TizenBrew-ba", act:"leave" },
   { label:"Bezárás",        act:"close" }
 ];
+
+/* kilépés a launcherből: előbb vissza az előző oldalra (TizenBrew), ha az nincs, az app bezárása */
+function leave() {
+  try { if (window.history.length > 1) { window.history.back(); return; } } catch (e) {}
+  try { if (window.tizen && tizen.application) { tizen.application.getCurrentApplication().exit(); return; } } catch (e) {}
+  toast("Nem sikerült kilépni. Használd a távirányító Home gombját.");
+}
 
 /* telepített appok: a valódi azonosítók a TV-ről jönnek (ha a Tizen API elérhető) */
 var MATCH = [/netflix/i, /^youtube$|^youtube tv$/i, /prime video|amazon/i, /disney/i, /plex/i, /spotify/i];
@@ -310,6 +318,7 @@ function panelKey(k) {
   else if (k === 13) {
     var r = ROWS[prow];
     if (r.act === "close") return closePanel();
+    if (r.act === "leave") return leave();
     if (r.act === "apps") { pview = "apps"; aoff = arow = 0; return drawPanel(); }
     if (r.act === "tv") { closePanel(); return launchId(TV_ID, "TV beállítások", "A TV beállításai innen nem nyithatók. Keresd az Összes alkalmazás listában, vagy használd a távirányító Settings gombját."); }
     change(1);
@@ -325,6 +334,7 @@ document.addEventListener("keydown", function (e) {
   var k = e.keyCode, n = ITEMS.length;
   $("hint").classList.add("off");
   if (panel) return panelKey(k);
+  if (k === 10009 || k === 27 || k === 8) return leave();
   if (k === 49 || k === 403) { S.mode = "home"; save(); return apply(); }
   if (k === 50 || k === 404) { S.mode = "shelf"; save(); return apply(); }
   if (k === 13) { press(); return ITEMS[idx].settings ? openPanel() : launchId(ITEMS[idx].id, ITEMS[idx].name); }
