@@ -70,11 +70,34 @@
   #toast.show { opacity:1; }
   #hint { position:absolute; right:120px; bottom:40px; font-size:22px; opacity:.55; transition:opacity 600ms ease; }
   #hint.off { opacity:0; }
+  /* Lightweight seasonal ambient layer; animation is compositor-friendly. */
+  #xmas { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  #xmasGlow { position:absolute; inset:0;
+    background:radial-gradient(900px 240px at 60% 82%,rgba(255,210,140,.26),transparent 70%);
+    animation:xmasPulse 12s ease-in-out infinite; }
+  #snow, #sparkles { position:absolute; inset:0; }
+  .flake { position:absolute; top:-14px; border-radius:50%; background:rgba(255,255,255,.85);
+    animation-name:xmasSnow; animation-timing-function:linear; animation-iteration-count:infinite; }
+  .flake.drift-left { animation-name:xmasSnowLeft; }
+  .spark { position:absolute; width:4px; height:4px; border-radius:50%;
+    background:rgba(255,244,218,.9); animation:xmasSpark 8s ease-in-out infinite; }
+  @keyframes xmasSnow { 0% { transform:translate3d(0,0,0);opacity:0; }
+    8% {opacity:.55;} 90% {opacity:.55;} 100% {transform:translate3d(55px,1130px,0);opacity:0;} }
+  @keyframes xmasSnowLeft { 0% {transform:translate3d(0,0,0);opacity:0;}
+    8% {opacity:.55;} 90% {opacity:.55;} 100% {transform:translate3d(-55px,1130px,0);opacity:0;} }
+  @keyframes xmasSpark { 0%,38%,62%,100% {opacity:0;transform:scale(.8);}
+    50% {opacity:.7;transform:scale(1.3);} }
+  @keyframes xmasPulse { 0%,100% {opacity:.14;} 50% {opacity:.27;} }
+  @media (prefers-reduced-motion:reduce) {
+    .flake,.spark,#xmasGlow { animation:none !important; }
+    .flake,.spark { display:none; }
+    #xmasGlow {opacity:.18;}
+  }
 </style>
 </head>
 <body>
 
-<div id="amb"><div id="bg"></div><div id="glows"></div><div id="scrim"></div></div>
+<div id="amb"><div id="bg"></div><div id="glows"></div><div id="xmas" class="hide"><div id="xmasGlow"></div><div id="snow"></div><div id="sparkles"></div></div><div id="scrim"></div></div>
 
 <div id="home">
   <div id="date" class="sec"></div>
@@ -117,7 +140,7 @@ var CITIES = [
 // ponytail: a Samsung beállítások app azonosítója nem ellenőrzött; 2017-es modelleken lehet, hogy nem indítható.
 var TV_SETTINGS_ID = "org.tizen.menu-setting";
 
-var S = { mode:"home", city:0, bg:"1", glow:"on" };
+var S = { mode:"home", city:0, bg:"1", glow:"on", xmas:"auto" };
 var idx = 0, panel = false, prow = 0, pview = "main", aoff = 0, arow = 0;
 var INSTALLED = [], TV_ID = TV_SETTINGS_ID;
 
@@ -157,12 +180,51 @@ function render() {
   $("csub").textContent = ITEMS[idx].sub;
   $("row").style.webkitTransform = $("row").style.transform = "translateX(" + (-Math.max(0, idx - 2) * 424) + "px)";
 }
+function isChristmasSeason(d) {
+  var month = d.getMonth(), day = d.getDate();
+  return (month === 10 && day >= 15) || month === 11 || (month === 0 && day <= 6);
+}
+function christmasEnabled() {
+  return S.xmas === "on" || (S.xmas === "auto" && isChristmasSeason(new Date()));
+}
+var snowBuilt = false;
+function buildChristmas() {
+  if (snowBuilt) return;
+  snowBuilt = true;
+  var snow = $("snow"), sparkles = $("sparkles");
+  for (var i = 0; i < 22; i++) {
+    var f = document.createElement("div");
+    f.className = "flake" + (i % 2 ? " drift-left" : "");
+    var size = (2 + Math.random() * 4).toFixed(1);
+    f.style.left = Math.round(Math.random() * 1920) + "px";
+    f.style.width = size + "px";
+    f.style.height = size + "px";
+    f.style.animationDuration = (15 + Math.random() * 11).toFixed(1) + "s";
+    f.style.animationDelay = (-Math.random() * 26).toFixed(1) + "s";
+    snow.appendChild(f);
+  }
+  for (var j = 0; j < 5; j++) {
+    var p = document.createElement("div");
+    p.className = "spark";
+    p.style.left = Math.round(140 + Math.random() * 1640) + "px";
+    p.style.top = Math.round(430 + Math.random() * 400) + "px";
+    p.style.animationDuration = (6 + Math.random() * 6).toFixed(1) + "s";
+    p.style.animationDelay = (-Math.random() * 12).toFixed(1) + "s";
+    sparkles.appendChild(p);
+  }
+}
+function updateChristmas() {
+  var enabled = christmasEnabled();
+  if (enabled) buildChristmas();
+  $("xmas").classList.toggle("hide", !enabled);
+}
 function apply() {
   $("home").classList.toggle("hide", S.mode !== "home");
   $("shelf").classList.toggle("hide", S.mode !== "shelf");
   $("bg").classList.toggle("hide", S.bg === "off");
   if (S.bg !== "off") $("bg").style.backgroundImage = "url(bg" + S.bg + ".jpg)";
   $("glows").classList.toggle("hide", S.glow !== "on");
+  updateChristmas();
   render();
 }
 
@@ -180,6 +242,7 @@ var ROWS = [
   { label:"Város",       key:"city", opts:CITIES.map(function (c, n) { return [n, c.name]; }) },
   { label:"Háttérkép",   key:"bg",   opts:[["1","Éjszaka"],["2","Alkonyat"],["3","Aurora"],["4","Köd"],["5","Grafit"],["off","Egyszínű"]] },
   { label:"Színes fény", key:"glow", opts:[["on","Be"],["off","Ki"]] },
+  { label:"Karácsonyi effekt", key:"xmas", opts:[["auto","Automatikus"],["on","Be"],["off","Ki"]] },
   { label:"TV beállítások", act:"tv" },
   { label:"Összes alkalmazás", act:"apps" },
   { label:"Bezárás",        act:"close" }
@@ -271,6 +334,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 function tick() {
+  updateChristmas(); // Re-evaluate automatic season when the date changes.
   var d = new Date();
   var t = d.toLocaleTimeString("hu-HU", { hour:"2-digit", minute:"2-digit" });
   $("clock").textContent = t; $("mclock").textContent = t;
