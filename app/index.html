@@ -15,7 +15,7 @@
   #amb { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#08080c; }
   #bg { position:absolute; left:0; top:0; width:1920px; height:1080px; background:#08080c center/cover no-repeat; }
   #scrim { position:absolute; left:0; top:0; width:1920px; height:1080px;
-    background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,0) 55%), linear-gradient(0deg,rgba(0,0,0,.55),rgba(0,0,0,0) 45%); }
+    background:linear-gradient(90deg,rgba(0,0,0,.3),rgba(0,0,0,0) 55%), linear-gradient(0deg,rgba(0,0,0,.4),rgba(0,0,0,0) 40%); }
   #glows .g { position:absolute; left:0; top:0; width:1920px; height:1080px; opacity:0; }
   #glows .g.on { opacity:.75; }
 
@@ -139,7 +139,7 @@ var CITIES = [
   { name:"Budapest", lat:47.4979, lon:19.0402 }
 ];
 
-var S = { mode:"home", city:0, bg:"1", glow:"off", xmas:"auto" };
+var S = { mode:"home", city:0, bg:"6", glow:"off", xmas:"auto" };
 var idx = 0, panel = false, prow = 0, pview = "main", aoff = 0, arow = 0;
 var INSTALLED = [];
 
@@ -273,7 +273,7 @@ function tvApps(list) {
 var ROWS = [
   { label:"Nézet",       key:"mode", opts:[["home","Home"],["shelf","Polc"]] },
   { label:"Város",       key:"city", opts:CITIES.map(function (c, n) { return [n, c.name]; }) },
-  { label:"Háttérkép",   key:"bg",   opts:[["1","Éjszaka"],["2","Alkonyat"],["3","Aurora"],["4","Köd"],["5","Grafit"],["off","Egyszínű"]] },
+  { label:"Háttérkép",   key:"bg",   opts:[["6","Hajnal"],["1","Éjszaka"],["2","Alkonyat"],["3","Aurora"],["4","Köd"],["5","Grafit"],["off","Egyszínű"]] },
   { label:"Színes fény", key:"glow", opts:[["on","Be"],["off","Ki"]] },
   { label:"Karácsonyi effekt", key:"xmas", opts:[["auto","Automatikus"],["on","Be"],["off","Ki"]] },
   { label:"TV menü és beállítások", act:"tvmenu" },
